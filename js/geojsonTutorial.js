@@ -1,12 +1,13 @@
-// Add all scripts to the JS folder
-
+// map variable defined with setView method defining map center (Denver approx.) and zoom level.
 var map = L.map('map').setView([40, -104], 5);
 
+//tileLayer method to define URL, attribution and maximum zoom level added to map. 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
+//myLines variable and mystyle defined.
 var myLines = [{
   "type": "LineString",
   "coordinates": [[-100, 40], [-105, 45], [-110, 55]]
@@ -21,10 +22,12 @@ var myStyle = {
   "opacity": 0.65
 };
 
+//L.geoJSON method using to create a geoJSON layer with myLines used as the object and added to map. 
 L.geoJSON(myLines, {
   style: myStyle
 }).addTo(map);
 
+//states variable defined.
 var states = [{
   "type": "Feature",
   "properties": { "party": "Republican" },
@@ -53,6 +56,7 @@ var states = [{
   }
 }];
 
+//L.geoJSON used again to create states with style used to determine the color of the state via the party definition. 
 L.geoJSON(states, {
   style: function (feature) {
     switch (feature.properties.party) {
@@ -86,6 +90,7 @@ var someGeojsonFeature = {
 };
 
 L.geoJSON(someGeojsonFeature, {
+  //pointToLayer used to spawn a marker per its default setting. 
   pointToLayer: function (feature, latlng) {
     return L.circleMarker(latlng, geojsonMarkerOptions);
   }
@@ -99,6 +104,7 @@ function onEachFeature(feature, layer) {
 }
 
 L.geoJSON(someGeojsonFeature, {
+  //onEachFeature used to link someGeojsonFeature to the layer so popups can be used. 
   onEachFeature: onEachFeature
 }).addTo(map);
 
