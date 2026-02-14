@@ -1,99 +1,101 @@
-// Declare the map variable with setView method defining map center (Denver approx.) and zoom level.
+// Declare the map variable
 var map;
 var minValue;
 
-// Create the map function
+// Create the map
 function createMap() {
-    // Create the map
+
     map = L.map('map').setView([32, -81], 9);
 
-    // Add the base tilelayer to the map
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         minZoom: 0,
         maxZoom: 20,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
-        ext: 'png'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
     }).addTo(map);
-    
-    
-    //Call the function to load GeoJSON data
+
     getData();
 }
 
+// Calculate minimum value for proportional symbols
 function calculateMinValue(data){
-    //create empty array to store all data values
+
     var allValues = [];
-    //loop through each city
-    for(var City of data.features){
-        //loop through each year
-        for(var year = 2016; year <= 2024; year+=5){
-              //get population for current year
-              var value = City.properties["Pop_"+ String(year)];
-              //add value to array
-              allValues.push(value);
+
+    for(var city of data.features){
+        for(var year = 2016; year <= 2024; year++){   // fixed loop
+            var value = Number(city.properties["Pop_" + year]);
+            if (!isNaN(value)){
+                allValues.push(value);
+            }
         }
     }
-    //get minimum value of our array
-    var minValue = Math.min(...allValues)
 
-    return minValue;
+    return Math.min(...allValues);
 }
 
-//calculate the radius of each proportional symbol
+// Calculate proportional symbol radius
 function calcPropRadius(attValue) {
-    //constant factor adjusts symbol sizes evenly
+
     var minRadius = 5;
-    //Flannery Apperance Compensation formula
-    var radius = 1.0083 * Math.pow(attValue/minValue,0.5715) * minRadius
+
+    var radius = 1.0083 * Math.pow(attValue/minValue, 0.5715) * minRadius;
 
     return radius;
-};
+}
 
-//Step 3: Add circle markers for point features to the map
-function createPropSymbols(data){
+// NEW: Named pointToLayer function (from tutorial)
+function pointToLayer(feature, latlng){
 
-    //Step 4: Determine which attribute to visualize with proportional symbols
     var attribute = "Pop_2016";
 
-    //create marker options
-    var geojsonMarkerOptions = {
+    var options = {
         fillColor: "#ff7800",
-        color: "#fff",
+        color: "#000",
         weight: 1,
         opacity: 1,
-        fillOpacity: 0.8,
-        radius: 8
+        fillOpacity: 0.8
     };
 
+    var attValue = Number(feature.properties[attribute]);
+
+    options.radius = calcPropRadius(attValue);
+
+    var layer = L.circleMarker(latlng, options);
+
+    // Popup content
+    var popupContent =
+        "<p><b>City:</b> " + feature.properties.City + "</p>" +
+        "<p><b>" + attribute + ":</b> " + feature.properties[attribute] + "</p>";
+
+    layer.bindPopup(popupContent, {
+        offset: new L.Point(1,-options.radius)
+    });
+
+    return layer;
+}
+
+// Add proportional symbols to map
+function createPropSymbols(data){
+
     L.geoJson(data, {
-        pointToLayer: function (feature, latlng) {
-            //Step 5: For each feature, determine its value for the selected attribute
-            var attValue = Number(feature.properties[attribute]);
-
-            //Step 6: Give each feature's circle marker a radius based on its attribute value
-            geojsonMarkerOptions.radius = calcPropRadius(attValue);
-
-            //create circle markers
-            return L.circleMarker(latlng, geojsonMarkerOptions);
-        }
+        pointToLayer: pointToLayer
     }).addTo(map);
-};
+}
 
-
-// Function to retrieve the GeoJSON data and add it to the map
+// Retrieve GeoJSON data
 function getData(){
-    //load the data
+
     fetch("data/Chatham_municipalities.geojson")
         .then(function(response){
             return response.json();
         })
         .then(function(json){
-            //calculate minimum data value
-            minValue = calculateMinValue(json);
-            //call function to create proportional symbols
-            createPropSymbols(json);
-        })
-};
 
-// Call createMap() when the DOM content is loaded
+            minValue = calculateMinValue(json);
+
+            createPropSymbols(json);
+        });
+}
+
+// Initialize map when DOM loads
 document.addEventListener('DOMContentLoaded', createMap);
