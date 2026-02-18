@@ -1,1 +1,38 @@
-/*Add CSS styles here*/
+
+#map {    
+    height: 700px;    
+    width: 90%;
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 10px;
+    }
+
+
+#panel {  
+    width: 25%;  
+    padding: 20px;  
+    display: inline-flexbox;  
+    vertical-align: top;  
+    text-align: center;  
+    line-height: 42px;  
+}  
+
+.range-slider {  
+    width: 80%;  
+}  
+
+.step {  
+    width: 20%;  
+}  
+
+.step img {  
+    width: 100%;  
+}  
+
+#forward {  
+    float: right;  
+}  
+
+#reverse {  
+    float: left;  
+}
